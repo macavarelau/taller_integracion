@@ -94,26 +94,42 @@ export default {
         .get(url_request)
         .then((response) => {
           this.characterSearched = response.data[0];
-          console.log(this.characterSearched);
         })
         .catch((error) => {
           console.log(error.response);
         });
     },
     getCharacters(character) {
+      let boolean = true;
+      this.charactersSearched = [];
+      let searched = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+      let page = 0;
       let url_request =
         "https://tarea-1-breaking-bad.herokuapp.com/api/characters?name=";
       let resp = character.replace(" ", "+");
-      url_request = url_request + resp;
-      axios
-        .get(url_request)
-        .then((response) => {
-          this.charactersSearched = response.data;
-          console.log(this.charactersSearched);
-        })
-        .catch((error) => {
-          console.log(error.response);
-        });
+      while (boolean) {
+        let aux = "&limit=10&offset=" + page.toString();
+        let request = url_request + resp + aux;
+        let concatenated = [];
+        axios
+          .get(request)
+          .then((response) => {
+            searched = response.data;
+            // console.log(searched.length, page);
+            concatenated = this.charactersSearched.concat(searched);
+            this.charactersSearched = concatenated;
+          })
+          .catch((error) => {
+            console.log(error.response);
+          });
+        page += 10;
+        // if (searched.length === 0) {
+        //   break;
+        // }
+        if (page == 150) {
+          break;
+        }
+      }
     },
     goBack() {
       this.characterSearched = null;
