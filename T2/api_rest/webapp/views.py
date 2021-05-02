@@ -9,7 +9,7 @@ from .serializers import ArtistSerializer, AlbumSerializer, TrackSerializer
 from base64 import b64encode
 
 # Create your views here.
-route = "http://127.0.0.1:8000/"
+route = "https://t2-taller-integracion-mvarela2.herokuapp.com/"
 
 def encode(word):
 
