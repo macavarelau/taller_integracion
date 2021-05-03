@@ -55,11 +55,11 @@ class ArtistList(APIView):
             dicc["id"] = serializer.data[i]["id"]
             dicc["name"] = serializer.data[i]["name"]
             dicc["age"] = serializer.data[i]["age"]
-            dicc["albums"] = route + "/artists/" + dicc["id"] + "/albums"
+            dicc["albums"] = route + "artists/" + dicc["id"] + "/albums"
             dicc["tracks"] = route + "artists/" + dicc["id"] + "/tracks"
             dicc["self"] = route + "artists/" + dicc["id"]
             arreglo.append(dicc)
-        return Response({'mensaje': "Resultados obtenidos", 'body': arreglo}, status = status.HTTP_200_OK)
+        return Response(arreglo, status = status.HTTP_200_OK)
 
     
     def post(self, request):
@@ -72,22 +72,30 @@ class ArtistList(APIView):
         artist["id"] = encode(artist["name"])
 
         if validate_uniqueness("artist", artist["id"]):
-            return Response({'mensaje': "Artista ya existe"}, status = status.HTTP_409_CONFLICT)
+            artist = Artist.objects.get(id = artist["id"])
+            serializer = ArtistSerializer(artist)
+            dicc = dict()
+            dicc["id"] = serializer.data["id"]
+            dicc["name"] = serializer.data["name"]
+            dicc["age"] = serializer.data["age"]
+            dicc["albums"] = route + "artists/" + dicc["id"] + "/albums"
+            dicc["tracks"] = route + "artists/" + dicc["id"] + "/tracks"
+            dicc["self"] = route + "artists/" + dicc["id"]
+            return Response(dicc, status = status.HTTP_409_CONFLICT)
 
         serializer = ArtistSerializer(data = artist)
 
-        arreglo = []
         if serializer.is_valid():
             serializer.save()
             dicc = dict()
             dicc["id"] = serializer.data["id"]
             dicc["name"] = serializer.data["name"]
             dicc["age"] = serializer.data["age"]
-            dicc["albums"] = route + "/artists/" + dicc["id"] + "/albums"
+            dicc["albums"] = route + "artists/" + dicc["id"] + "/albums"
             dicc["tracks"] = route + "artists/" + dicc["id"] + "/tracks"
             dicc["self"] = route + "artists/" + dicc["id"]
-            arreglo.append(dicc)
-            return Response({'mensaje': "Artista creado", 'body': arreglo}, status = status.HTTP_201_CREATED)
+            
+            return Response(dicc, status = status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
@@ -116,7 +124,6 @@ class ArtistSimple(APIView):
             return Response({'mensaje': "Artista no encontrado"}, status=status.HTTP_404_NOT_FOUND)
         artist = Artist.objects.get(id = id)
         serializer = ArtistSerializer(artist)
-        arreglo = []
         dicc = dict()
         dicc["id"] = serializer.data["id"]
         dicc["name"] = serializer.data["name"]
@@ -124,8 +131,7 @@ class ArtistSimple(APIView):
         dicc["albums"] = route + "artists/" + dicc["id"] + "/albums"
         dicc["tracks"] = route + "artists/" + dicc["id"] + "/tracks"
         dicc["self"] = route + "artists/" + dicc["id"]
-        arreglo.append(dicc)
-        return Response({'mensaje': "Operación exitosa", 'body': arreglo}, status = status.HTTP_200_OK)
+        return Response(dicc, status = status.HTTP_200_OK)
 
     def delete(self, request, id):
         
@@ -155,7 +161,7 @@ class ArtistAlbums(APIView):
             dicc["tracks"] = route + "albums/" + dicc["id"] + "/tracks"
             dicc["self"] = route + "albums/" + dicc["id"]
             arreglo.append(dicc)
-        return Response({'mensaje': "Resultados obtenidos", 'body': arreglo}, status = status.HTTP_200_OK)
+        return Response(arreglo, status = status.HTTP_200_OK)
 
     def post(self, request, artist_id):
 
@@ -170,7 +176,17 @@ class ArtistAlbums(APIView):
         album["id"] = encode(string)
 
         if validate_uniqueness("album", album["id"]):
-            return Response({'mensaje': "Álbum ya existe"}, status = status.HTTP_409_CONFLICT)
+            album = Album.objects.get(id = album["id"])
+            serializer = AlbumSerializer(album)
+            dicc = dict()
+            dicc["id"] = serializer.data["id"]
+            dicc["artist_id"] = serializer.data["artist_id"]
+            dicc["name"] = serializer.data["name"]
+            dicc["genre"] = serializer.data["genre"]
+            dicc["artist"] = route + "artists/" + dicc["artist_id"]
+            dicc["tracks"] = route + "albums/" + dicc["id"] + "/tracks"
+            dicc["self"] = route + "albums/" + dicc["id"]
+            return Response(dicc, status = status.HTTP_409_CONFLICT)
 
         artist = Artist.objects.get(id = artist_id)
         serializer_artist = ArtistSerializer(artist)
@@ -178,7 +194,6 @@ class ArtistAlbums(APIView):
 
         serializer = AlbumSerializer(data = album)
 
-        arreglo = []
         if serializer.is_valid():
             serializer.save()
             dicc = dict()
@@ -189,8 +204,8 @@ class ArtistAlbums(APIView):
             dicc["artist"] = route + "artists/" + dicc["artist_id"]
             dicc["tracks"] = route + "albums/" + dicc["id"] + "/tracks"
             dicc["self"] = route + "albums/" + dicc["id"]
-            arreglo.append(dicc)
-            return Response({'mensaje': "Álbum creado", 'body': arreglo}, status = status.HTTP_201_CREATED)
+            
+            return Response(dicc, status = status.HTTP_201_CREATED)
 
 class ArtistTracks(APIView):
     
@@ -211,10 +226,10 @@ class ArtistTracks(APIView):
                 dicc["duration"] = serializer.data[j]["duration"]
                 dicc["times_played"] = serializer.data[j]["times_played"]
                 dicc["artist"] = route + "artists/" + serializer_album.data[i]["artist_id"]
-                dicc["tracks"] = route + "albums/" + dicc["album_id"]
+                dicc["album"] = route + "albums/" + dicc["album_id"]
                 dicc["self"] = route + "tracks/" + dicc["id"]
                 arreglo.append(dicc)
-        return Response({'mensaje': "Resultados obtenidos", 'body': arreglo}, status = status.HTTP_200_OK)
+        return Response(arreglo, status = status.HTTP_200_OK)
 
 class AlbumList(APIView):
 
@@ -232,7 +247,7 @@ class AlbumList(APIView):
             dicc["tracks"] = route + "albums/" + dicc["id"] + "/tracks"
             dicc["self"] = route + "albums/" + dicc["id"]
             arreglo.append(dicc)
-        return Response({'mensaje': "Resultados obtenidos", 'body': arreglo}, status = status.HTTP_200_OK)
+        return Response(arreglo, status = status.HTTP_200_OK)
     
 
     def put(self, request, id):
@@ -257,7 +272,6 @@ class AlbumSimple(APIView):
             return Response({'mensaje': "Álbum no encontrado"}, status=status.HTTP_404_NOT_FOUND)
         album = Album.objects.get(id = id)
         serializer = AlbumSerializer(album)
-        arreglo = []
         dicc = dict()
         dicc["id"] = serializer.data["id"]
         dicc["artist_id"] = serializer.data["artist_id"]
@@ -266,8 +280,7 @@ class AlbumSimple(APIView):
         dicc["artist"] = route + "artists/" + dicc["artist_id"]
         dicc["tracks"] = route + "albums/" + dicc["id"] + "/tracks"
         dicc["self"] = route + "albums/" + dicc["id"]
-        arreglo.append(dicc)
-        return Response({'mensaje': "Operación exitosa", 'body': arreglo}, status = status.HTTP_200_OK)
+        return Response(dicc, status = status.HTTP_200_OK)
 
     def delete(self, request, id):
 
@@ -300,7 +313,7 @@ class AlbumsTracks(APIView):
             dicc["album"] = route + "albums/" + dicc["album_id"]
             dicc["self"] = route + "tracks/" + dicc["id"]
             arreglo.append(dicc)
-        return Response({'mensaje': "Resultados obtenidos", 'body': arreglo}, status = status.HTTP_200_OK)
+        return Response(arreglo, status = status.HTTP_200_OK)
 
     def post(self, request, id):
 
@@ -316,7 +329,20 @@ class AlbumsTracks(APIView):
         track["id"] = encode(string)
 
         if validate_uniqueness("track", track["id"]):
-            return Response({'mensaje': "Canción ya existe"}, status = status.HTTP_409_CONFLICT)
+            track = Track.objects.get(id = track["id"])
+            serializer = TrackSerializer(track)
+            dicc = dict()
+            dicc["id"] = serializer.data["id"]
+            dicc["album_id"] = serializer.data["album_id"]
+            dicc["name"] = serializer.data["name"]
+            dicc["duration"] = serializer.data["duration"]
+            dicc["times_played"] = serializer.data["times_played"]
+            album = Album.objects.get(id = serializer.data["album_id"])
+            serializer_album = AlbumSerializer(album)
+            dicc["artist"] = route + "artists/" + serializer_album.data["artist_id"]
+            dicc["album"] = route + "albums/" + dicc["album_id"]
+            dicc["self"] = route + "tracks/" + dicc["id"]
+            return Response(dicc, status = status.HTTP_409_CONFLICT)
 
         album = Album.objects.get(id = id)
         serializer_album = AlbumSerializer(album)
@@ -324,7 +350,6 @@ class AlbumsTracks(APIView):
 
         serializer = TrackSerializer(data = track)
 
-        arreglo = []
         if serializer.is_valid():
             serializer.save()
             dicc = dict()
@@ -336,10 +361,9 @@ class AlbumsTracks(APIView):
             album = Album.objects.get(id = serializer.data["album_id"])
             serializer_album = AlbumSerializer(album)
             dicc["artist"] = route + "artists/" + serializer_album.data["artist_id"]
-            dicc["tracks"] = route + "albums/" + dicc["album_id"]
+            dicc["album"] = route + "albums/" + dicc["album_id"]
             dicc["self"] = route + "tracks/" + dicc["id"]
-            arreglo.append(dicc)
-            return Response({'mensaje': "Canción creada", 'body': arreglo}, status = status.HTTP_201_CREATED)
+            return Response(dicc, status = status.HTTP_201_CREATED)
              
 
 class TrackList(APIView):
@@ -361,7 +385,7 @@ class TrackList(APIView):
             dicc["album"] = route + "albums/" + dicc["album_id"]
             dicc["self"] = route + "tracks/" + dicc["id"]
             arreglo.append(dicc)
-        return Response({'mensaje': "Operación exitosa", 'body': arreglo}, status = status.HTTP_200_OK)
+        return Response(arreglo, status = status.HTTP_200_OK)
 
     def put(self, request, id):
 
@@ -383,7 +407,6 @@ class TrackSimple(APIView):
             return Response({'mensaje': "Canción no encontrada"}, status=status.HTTP_404_NOT_FOUND)
         track = Track.objects.get(id = id)
         serializer = TrackSerializer(track)
-        arreglo = []
         dicc = dict()
         dicc["id"] = serializer.data["id"]
         dicc["album_id"] = serializer.data["album_id"]
@@ -393,10 +416,9 @@ class TrackSimple(APIView):
         album = Album.objects.get(id = serializer.data["album_id"])
         serializer_album = AlbumSerializer(album)
         dicc["artist"] = route + "artists/" + serializer_album.data["artist_id"]
-        dicc["tracks"] = route + "albums/" + dicc["album_id"]
+        dicc["album"] = route + "albums/" + dicc["album_id"]
         dicc["self"] = route + "tracks/" + dicc["id"]
-        arreglo.append(dicc)
-        return Response({'mensaje': "Operación exitosa", 'body': arreglo}, status = status.HTTP_200_OK)
+        return Response(dicc, status = status.HTTP_200_OK)
 
     def delete(self, request, id):
         

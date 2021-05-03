@@ -20,17 +20,17 @@ from webapp import views
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('artists/', views.ArtistList.as_view()), #funciona
+    path('admin', admin.site.urls),
+    path('artists', views.ArtistList.as_view()), #funciona
     path('artists/<id>', views.ArtistSimple.as_view()), #funciona
     path('artists/<artist_id>/albums', views.ArtistAlbums.as_view()), #funciona
     path('artists/<id>/tracks', views.ArtistTracks.as_view()), #funciona
     path('artists/<id>/albums/play', views.ArtistList.as_view()), #funciona
-    path('albums/', views.AlbumList.as_view()), #funciona
+    path('albums', views.AlbumList.as_view()), #funciona
     path('albums/<id>', views.AlbumSimple.as_view()), #funciona
     path('albums/<id>/tracks', views.AlbumsTracks.as_view()), #funciona
     path('albums/<id>/tracks/play', views.AlbumList.as_view()), #funciona
-    path('tracks/', views.TrackList.as_view()), #funciona
+    path('tracks', views.TrackList.as_view()), #funciona
     path('tracks/<id>', views.TrackSimple.as_view()), #funciona
     path('tracks/<id>/play', views.TrackList.as_view()) #funciona
 ]
